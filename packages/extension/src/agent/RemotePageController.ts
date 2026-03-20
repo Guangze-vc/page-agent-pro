@@ -112,6 +112,23 @@ export class RemotePageController {
 		})
 	}
 
+	async getChatMessagesFingerprint(): Promise<ChatMessagesFingerprintResult> {
+		if (!this.currentTabId) {
+			throw new Error('tabsController not initialized.')
+		}
+
+		const url = await this.getCurrentUrl()
+		if (!isContentScriptAllowed(url)) {
+			return { success: false, fingerprint: '', messageCount: 0, reason: 'not_allowed' }
+		}
+
+		return sendMessage({
+			type: 'PAGE_CONTROL',
+			action: 'get_chat_messages_fingerprint',
+			targetTabId: this.currentTabId,
+		})
+	}
+
 	async clickElement(...args: any[]): Promise<DomActionReturn> {
 		const res = await this.remoteCallDomAction('click_element', args)
 		// @note may cause page navigation, wait for 1 second to ensure the page loading started
@@ -171,6 +188,13 @@ export class RemotePageController {
 interface DomActionReturn {
 	success: boolean
 	message: string
+}
+
+export interface ChatMessagesFingerprintResult {
+	success: boolean
+	fingerprint: string
+	messageCount: number
+	reason?: string
 }
 
 /**

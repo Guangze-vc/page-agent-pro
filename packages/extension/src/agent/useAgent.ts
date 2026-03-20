@@ -34,6 +34,9 @@ export interface UseAgentResult {
 	currentTask: string
 	config: ExtConfig | null
 	execute: (task: string) => Promise<ExecutionResult>
+	getChatMessagesFingerprint: () => Promise<
+		import('./RemotePageController').ChatMessagesFingerprintResult
+	>
 	stop: () => void
 	configure: (config: ExtConfig) => Promise<void>
 }
@@ -114,6 +117,25 @@ export function useAgent(): UseAgentResult {
 		return agent.execute(task)
 	}, [])
 
+	const getChatMessagesFingerprint = useCallback(async () => {
+		const agent = agentRef.current
+		if (!agent) throw new Error('Agent not initialized')
+
+		const pc = (agent as any).pageController as
+			| {
+					getChatMessagesFingerprint?: () => Promise<
+						import('./RemotePageController').ChatMessagesFingerprintResult
+					>
+			  }
+			| undefined
+
+		if (!pc?.getChatMessagesFingerprint) {
+			throw new Error('RemotePageController.getChatMessagesFingerprint is not available')
+		}
+
+		return pc.getChatMessagesFingerprint()
+	}, [])
+
 	const stop = useCallback(() => {
 		agentRef.current?.stop()
 	}, [])
@@ -146,6 +168,7 @@ export function useAgent(): UseAgentResult {
 		currentTask,
 		config,
 		execute,
+		getChatMessagesFingerprint,
 		stop,
 		configure,
 	}

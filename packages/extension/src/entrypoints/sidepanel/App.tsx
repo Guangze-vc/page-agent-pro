@@ -29,7 +29,26 @@ export default function App() {
 	const historyRef = useRef<HTMLDivElement>(null)
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-	const { status, history, activity, currentTask, config, execute, stop, configure } = useAgent()
+	const {
+		status,
+		history,
+		activity,
+		currentTask,
+		config,
+		execute,
+		stop,
+		configure,
+		getChatMessagesFingerprint,
+	} = useAgent()
+
+	const statusRef = useRef(status)
+	useEffect(() => {
+		statusRef.current = status
+	}, [status])
+
+	useEffect(() => {
+		console.log('[SidePanel] App mounted')
+	}, [])
 
 	// Persist session when task finishes
 	const prevStatusRef = useRef(status)
@@ -56,19 +75,99 @@ export default function App() {
 		}
 	}, [history, activity])
 
+	const chatWatcherIntervalRef = useRef<number | null>(null)
+	const lastChatFingerprintRef = useRef<string>('')
+
+	const stopChatWatcher = useCallback(() => {
+		if (chatWatcherIntervalRef.current !== null) {
+			window.clearInterval(chatWatcherIntervalRef.current)
+			chatWatcherIntervalRef.current = null
+		}
+		lastChatFingerprintRef.current = ''
+	}, [])
+
+	useEffect(() => {
+		return () => {
+			stopChatWatcher()
+		}
+	}, [stopChatWatcher])
+
+	// Watch chat for new messages after each agent run completes.
+	const prevAgentStatusForWatcherRef = useRef(status)
+	useEffect(() => {
+		const prev = prevAgentStatusForWatcherRef.current
+		prevAgentStatusForWatcherRef.current = status
+
+		console.log('[ChatWatcher] status transition', {
+			prev,
+			status,
+			currentTask,
+		})
+
+		if (status === 'running') {
+			stopChatWatcher()
+			return
+		}
+
+		if (prev !== 'running') return
+		if (!(status === 'completed' || status === 'error')) return
+		if (!currentTask) return
+
+		void (async () => {
+			stopChatWatcher()
+
+			try {
+				const initial = await getChatMessagesFingerprint()
+				console.log('[ChatWatcher] initial fingerprint:', initial)
+
+				if (!initial.success || !initial.fingerprint) {
+					console.log('[ChatWatcher] container not ready, skip auto-restart')
+					return
+				}
+
+				lastChatFingerprintRef.current = initial.fingerprint
+
+				chatWatcherIntervalRef.current = window.setInterval(async () => {
+					try {
+						if (statusRef.current === 'running') return
+
+						const latest = await getChatMessagesFingerprint()
+						if (!latest.success || !latest.fingerprint) return
+
+						if (latest.fingerprint !== lastChatFingerprintRef.current) {
+							console.log('[ChatWatcher] detected new message(s):', latest)
+
+							lastChatFingerprintRef.current = latest.fingerprint
+							stopChatWatcher()
+
+							void execute(currentTask).catch((error) => {
+								console.error('[SidePanel] Failed to auto-execute task:', error)
+							})
+						}
+					} catch (error) {
+						console.error('[ChatWatcher] polling error:', error)
+					}
+				}, 1000)
+			} catch (error) {
+				console.error('[ChatWatcher] failed to start watcher:', error)
+			}
+		})()
+	}, [status, currentTask, execute, getChatMessagesFingerprint, stopChatWatcher])
+
 	const runTask = useCallback(
 		(task: string) => {
 			const normalizedTask = task.trim()
-			if (!normalizedTask || status === 'running') return
+			if (!normalizedTask || statusRef.current === 'running') return
 
 			setInputValue('')
 			setView({ name: 'chat' })
+			stopChatWatcher()
 
 			execute(normalizedTask).catch((error) => {
 				console.error('[SidePanel] Failed to execute task:', error)
 			})
 		},
-		[execute, status]
+		[execute, stopChatWatcher]
 	)
 
 	const handleSubmit = useCallback(
@@ -82,7 +181,8 @@ export default function App() {
 	const handleStop = useCallback(() => {
 		console.log('[SidePanel] Stopping task...')
 		stop()
-	}, [stop])
+		stopChatWatcher()
+	}, [stop, stopChatWatcher])
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
