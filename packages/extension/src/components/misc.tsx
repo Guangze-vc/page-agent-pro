@@ -4,6 +4,7 @@ import { BookOpen, Globe } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { siGithub } from 'simple-icons'
 
+import logoIcon from '@/assets/icon.png'
 import { TypingAnimation } from '@/components/ui/typing-animation'
 import { cn } from '@/lib/utils'
 
@@ -34,7 +35,7 @@ export function StatusDot({ status }: { status: AgentStatus }) {
 }
 
 export function Logo({ className }: { className?: string }) {
-	return <img src="/assets/page-agent-256.webp" alt="Page Agent" className={cn('', className)} />
+	return <img src={logoIcon} alt="Page Agent" className={cn('', className)} />
 }
 
 // Full-screen ai-motion glow overlay, shown only while running
@@ -100,7 +101,7 @@ export function EmptyState() {
 				<Logo className="relative size-20 opacity-80" />
 			</div>
 			<div>
-				<h2 className="text-base font-medium text-foreground mb-1">Page Agent Ext</h2>
+				<h2 className="text-base font-medium text-foreground mb-1">皮皮虾</h2>
 				<TypingAnimation
 					className="text-sm text-muted-foreground"
 					words={[

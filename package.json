@@ -26,7 +26,7 @@
     },
     "scripts": {
         "start": "npm run dev --workspace=@page-agent/website",
-        "dev:ext": "npm run dev -w @page-agent/ext",
+        "dev:ext": "npm run dev -w @page-agent/ext --",
         "dev:demo": "npm run dev:demo --workspace=page-agent",
         "build": "npm run build:libs && npm run build:website",
         "build:libs": "npm run build --workspaces --if-present",

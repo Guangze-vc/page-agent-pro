@@ -1,17 +1,41 @@
 import tailwindcss from '@tailwindcss/vite'
-import { mkdirSync, readFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineConfig } from 'wxt'
 
-const chromeProfile = '.wxt/chrome-data'
+const chromeProfile = resolve(process.cwd(), '.wxt/chrome-data')
+const devServerHost = '127.0.0.1'
+const devServerPort = 3300
+const devServerOrigin = `http://${devServerHost}:${devServerPort}`
+const sourceIconPath = resolve(process.cwd(), 'src/assets/icon.png')
+const publicAssetsDir = resolve(process.cwd(), 'public/assets')
+const publicIconPath = resolve(publicAssetsDir, 'icon.png')
+
 mkdirSync(chromeProfile, { recursive: true })
+mkdirSync(publicAssetsDir, { recursive: true })
+copyFileSync(sourceIconPath, publicIconPath)
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
+
+// Default installation path for Edge on Windows
+const edgeBinary = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
 	srcDir: 'src',
 	modules: ['@wxt-dev/module-react'],
+	dev: {
+		server: {
+			host: devServerHost,
+			port: devServerPort,
+			origin: devServerOrigin,
+		},
+	},
 	webExt: {
+		// WXT expects binaries to be in this object to avoid Chrome fallback
+		binaries: {
+			edge: process.platform === 'win32' ? edgeBinary : undefined,
+		},
 		chromiumProfile: chromeProfile,
 		keepProfileChanges: true,
 		chromiumArgs: ['--hide-crash-restore-bubble'],
@@ -48,10 +72,15 @@ export default defineConfig({
 		permissions: ['tabs', 'tabGroups', 'sidePanel', 'storage'],
 		host_permissions: ['<all_urls>'],
 		icons: {
-			64: 'assets/page-agent-64.png',
+			16: 'assets/icon.png',
+			32: 'assets/icon.png',
+			48: 'assets/icon.png',
+			64: 'assets/icon.png',
+			128: 'assets/icon.png',
 		},
 		action: {
 			default_title: '__MSG_extActionTitle__',
+			default_icon: 'assets/icon.png',
 		},
 		web_accessible_resources: [
 			{
@@ -60,7 +89,7 @@ export default defineConfig({
 			},
 		],
 		side_panel: {
-			default_path: 'sidepanel/index.html',
+			default_path: 'sidepanel.html',
 		},
 		externally_connectable: {
 			matches: ['http://localhost/*'],
