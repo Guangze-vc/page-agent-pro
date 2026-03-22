@@ -1,8 +1,13 @@
 import tailwindcss from '@tailwindcss/vite'
 import { mkdirSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineConfig } from 'wxt'
 
-const chromeProfile = '.wxt/chrome-data'
+const chromeProfile = resolve(process.cwd(), '.wxt/chrome-data')
+const devServerHost = '127.0.0.1'
+const devServerPort = 3300
+const devServerOrigin = `http://${devServerHost}:${devServerPort}`
+
 mkdirSync(chromeProfile, { recursive: true })
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
@@ -11,6 +16,13 @@ const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 export default defineConfig({
 	srcDir: 'src',
 	modules: ['@wxt-dev/module-react'],
+	dev: {
+		server: {
+			host: devServerHost,
+			port: devServerPort,
+			origin: devServerOrigin,
+		},
+	},
 	webExt: {
 		chromiumProfile: chromeProfile,
 		keepProfileChanges: true,
@@ -60,7 +72,7 @@ export default defineConfig({
 			},
 		],
 		side_panel: {
-			default_path: 'sidepanel/index.html',
+			default_path: 'sidepanel.html',
 		},
 		externally_connectable: {
 			matches: ['http://localhost/*'],

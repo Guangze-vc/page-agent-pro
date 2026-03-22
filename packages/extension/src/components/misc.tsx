@@ -100,7 +100,7 @@ export function EmptyState() {
 				<Logo className="relative size-20 opacity-80" />
 			</div>
 			<div>
-				<h2 className="text-base font-medium text-foreground mb-1">Page Agent Ext</h2>
+				<h2 className="text-base font-medium text-foreground mb-1">皮皮虾</h2>
 				<TypingAnimation
 					className="text-sm text-muted-foreground"
 					words={[
