@@ -25,8 +25,8 @@ The GUI Agent Living in Your Webpage. Control web interfaces with natural langua
 - **📖 Text-based DOM manipulation**
     - No screenshots. No multi-modal LLMs or special permissions needed.
 - **🧠 Bring your own LLMs**
-- **🎨 Pretty UI with human-in-the-loop**
 - **🐙 Optional [chrome extension](https://alibaba.github.io/page-agent/docs/features/chrome-extension) for multi-page tasks.**
+    - And an [MCP Server (Beta)](https://alibaba.github.io/page-agent/docs/features/mcp-server) to control it from outside
 
 ## 💡 Use Cases
 
@@ -49,8 +49,8 @@ Fastest way to try PageAgent with our free Demo LLM:
 
 | Mirrors | URL                                                                                |
 | ------- | ---------------------------------------------------------------------------------- |
-| Global  | https://cdn.jsdelivr.net/npm/page-agent@1.5.11/dist/iife/page-agent.demo.js         |
-| China   | https://registry.npmmirror.com/page-agent/1.5.11/files/dist/iife/page-agent.demo.js |
+| Global  | https://cdn.jsdelivr.net/npm/page-agent@1.6.1/dist/iife/page-agent.demo.js         |
+| China   | https://registry.npmmirror.com/page-agent/1.6.1/files/dist/iife/page-agent.demo.js |
 
 ### NPM Installation
 
@@ -79,7 +79,7 @@ We welcome contributions from the community! Follow our instructions in [CONTRIB
 
 Please read [Code of Conduct](docs/CODE_OF_CONDUCT.md) before contributing.
 
-Contributions generated entirely by bots or agents without substantial human involvement will not be accepted, and bot accounts may be blocked.
+Contributions generated entirely by **bots or agents** without substantial human involvement will **not be accepted**.
 
 ## 👏 Acknowledgments
 
