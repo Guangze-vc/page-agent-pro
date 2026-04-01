@@ -21,6 +21,7 @@ export interface AdvancedConfig {
 	maxSteps?: number
 	systemInstruction?: string
 	experimentalLlmsTxt?: boolean
+	experimentalIncludeAllTabs?: boolean
 	disableNamedToolChoice?: boolean
 }
 
@@ -147,6 +148,7 @@ export function useAgent(): UseAgentResult {
 			maxSteps,
 			systemInstruction,
 			experimentalLlmsTxt,
+			experimentalIncludeAllTabs,
 			disableNamedToolChoice,
 			...llmConfig
 		}: ExtConfig) => {
@@ -160,6 +162,7 @@ export function useAgent(): UseAgentResult {
 				maxSteps,
 				systemInstruction,
 				experimentalLlmsTxt,
+				experimentalIncludeAllTabs,
 				disableNamedToolChoice,
 			}
 			await chrome.storage.local.set({ advancedConfig })

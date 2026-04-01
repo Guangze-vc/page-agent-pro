@@ -110,6 +110,7 @@ export function EmptyState() {
 					]}
 					cursorStyle="underscore"
 					loop
+					startOnView={false}
 					typeSpeed={20}
 					deleteSpeed={10}
 					pauseDelay={3000}
