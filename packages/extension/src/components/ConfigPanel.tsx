@@ -8,7 +8,9 @@ import {
 	HatGlasses,
 	Home,
 	Loader2,
+	Plus,
 	Scale,
+	Trash2,
 	UnfoldVertical,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -42,6 +44,9 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 	const [disableNamedToolChoice, setDisableNamedToolChoice] = useState(
 		config?.disableNamedToolChoice ?? false
 	)
+	const [pageInstructions, setPageInstructions] = useState<
+		import('@/agent/useAgent').PageInstructionItem[]
+	>(config?.pageInstructions ?? [])
 	const [advancedOpen, setAdvancedOpen] = useState(false)
 	const [saving, setSaving] = useState(false)
 	const [userAuthToken, setUserAuthToken] = useState('')
@@ -59,6 +64,7 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 		setExperimentalLlmsTxt(config?.experimentalLlmsTxt ?? false)
 		setExperimentalIncludeAllTabs(config?.experimentalIncludeAllTabs ?? false)
 		setDisableNamedToolChoice(config?.disableNamedToolChoice ?? false)
+		setPageInstructions(config?.pageInstructions ?? [])
 	}, [config])
 
 	// Poll for user auth token every second until found
@@ -106,10 +112,27 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 				experimentalLlmsTxt,
 				experimentalIncludeAllTabs,
 				disableNamedToolChoice,
+				pageInstructions,
 			})
 		} finally {
 			setSaving(false)
 		}
+	}
+
+	const handleAddInstruction = () => {
+		setPageInstructions((prev) => [...prev, { id: crypto.randomUUID(), urlPattern: '', text: '' }])
+	}
+
+	const handleUpdateInstruction = (index: number, field: 'urlPattern' | 'text', value: string) => {
+		setPageInstructions((prev) => {
+			const updated = [...prev]
+			updated[index] = { ...updated[index], [field]: value }
+			return updated
+		})
+	}
+
+	const handleRemoveInstruction = (index: number) => {
+		setPageInstructions((prev) => prev.filter((_, i) => i !== index))
 	}
 
 	return (
@@ -298,6 +321,58 @@ export function ConfigPanel({ config, onSave, onClose }: ConfigPanelProps) {
 							onCheckedChange={setExperimentalIncludeAllTabs}
 						/>
 					</label>
+
+					<div className="flex flex-col gap-2 mt-2 pt-2 border-t border-border/50">
+						<div className="flex items-center justify-between">
+							<span className="text-xs font-semibold text-muted-foreground">Page Instructions</span>
+							<Button
+								variant="outline"
+								size="icon-sm"
+								onClick={handleAddInstruction}
+								className="h-6 w-6 cursor-pointer"
+							>
+								<Plus className="size-3" />
+							</Button>
+						</div>
+
+						{pageInstructions.map((pi, index) => (
+							<div
+								key={pi.id}
+								className="flex flex-col gap-1.5 p-2 bg-muted/30 border rounded-md relative group"
+							>
+								<Button
+									variant="ghost"
+									size="icon-sm"
+									onClick={() => handleRemoveInstruction(index)}
+									className="absolute top-1 right-1 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-destructive"
+								>
+									<Trash2 className="size-3" />
+								</Button>
+								<label className="text-[10px] text-muted-foreground">URL Pattern</label>
+								<Input
+									placeholder="e.g. example.com/admin"
+									value={pi.urlPattern}
+									onChange={(e) => handleUpdateInstruction(index, 'urlPattern', e.target.value)}
+									className="text-xs h-7 pr-7"
+								/>
+								<label className="text-[10px] text-muted-foreground mt-1">
+									Markdown Instructions
+								</label>
+								<textarea
+									placeholder="# Page rules..."
+									value={pi.text}
+									onChange={(e) => handleUpdateInstruction(index, 'text', e.target.value)}
+									rows={3}
+									className="text-[11px] rounded-md border border-input bg-background px-2 py-1.5 resize-y min-h-[50px]"
+								/>
+							</div>
+						))}
+						{pageInstructions.length === 0 && (
+							<div className="text-center text-[10px] text-muted-foreground py-2 border rounded-md border-dashed">
+								No custom page instructions.
+							</div>
+						)}
+					</div>
 				</>
 			)}
 

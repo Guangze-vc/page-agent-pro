@@ -13,9 +13,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { MultiPageAgent } from './MultiPageAgent'
 import { DEMO_CONFIG, migrateLegacyEndpoint } from './constants'
+import MEITUAN_INSTRUCTIONS from './pageInstructions/meituan_instructions.md?raw'
 
 /** Language preference: undefined means follow system */
 export type LanguagePreference = SupportedLanguage | undefined
+
+export interface PageInstructionItem {
+	id: string
+	urlPattern: string
+	text: string
+}
 
 export interface AdvancedConfig {
 	maxSteps?: number
@@ -23,6 +30,7 @@ export interface AdvancedConfig {
 	experimentalLlmsTxt?: boolean
 	experimentalIncludeAllTabs?: boolean
 	disableNamedToolChoice?: boolean
+	pageInstructions?: PageInstructionItem[]
 }
 
 export interface ExtConfig extends LLMConfig, AdvancedConfig {
@@ -57,6 +65,16 @@ export function useAgent(): UseAgentResult {
 			const language = (result.language as SupportedLanguage) || undefined
 			const advancedConfig = (result.advancedConfig as AdvancedConfig) ?? {}
 
+			if (advancedConfig.pageInstructions === undefined) {
+				advancedConfig.pageInstructions = [
+					{
+						id: crypto.randomUUID(),
+						urlPattern: 'yiyao.meituan.com/imworkbench/home',
+						text: MEITUAN_INSTRUCTIONS,
+					},
+				]
+			}
+
 			// Auto-migrate legacy testing endpoints
 			const migrated = migrateLegacyEndpoint(llmConfig)
 			if (migrated !== llmConfig) {
@@ -76,7 +94,19 @@ export function useAgent(): UseAgentResult {
 		const { systemInstruction, ...agentConfig } = config
 		const agent = new MultiPageAgent({
 			...agentConfig,
-			instructions: systemInstruction ? { system: systemInstruction } : undefined,
+			instructions: {
+				...(systemInstruction ? { system: systemInstruction } : {}),
+				getPageInstructions: (url) => {
+					if (agentConfig.pageInstructions) {
+						for (const pi of agentConfig.pageInstructions) {
+							if (url.includes(pi.urlPattern)) {
+								return pi.text
+							}
+						}
+					}
+					return null
+				},
+			},
 		})
 		agentRef.current = agent
 

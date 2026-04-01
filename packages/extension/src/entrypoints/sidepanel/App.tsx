@@ -1,4 +1,4 @@
-import { History, Send, Settings, Square } from 'lucide-react'
+import { History, Play, Settings, Square } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ConfigPanel } from '@/components/ConfigPanel'
@@ -7,13 +7,8 @@ import { HistoryList } from '@/components/HistoryList'
 import { ActivityCard, EventCard } from '@/components/cards'
 import { EmptyState, Logo, MotionOverlay, StatusDot } from '@/components/misc'
 import { Button } from '@/components/ui/button'
-import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupButton,
-	InputGroupTextarea,
-} from '@/components/ui/input-group'
-import { saveSession } from '@/lib/db'
+import { InputGroup, InputGroupAddon, InputGroupButton } from '@/components/ui/input-group'
+import { listSessions, saveSession } from '@/lib/db'
 
 import { useAgent } from '../../agent/useAgent'
 
@@ -26,8 +21,8 @@ type View =
 export default function App() {
 	const [view, setView] = useState<View>({ name: 'chat' })
 	const [inputValue, setInputValue] = useState('')
+	const [historicalTasks, setHistoricalTasks] = useState<string[]>([])
 	const historyRef = useRef<HTMLDivElement>(null)
-	const textareaRef = useRef<HTMLTextAreaElement>(null)
 
 	const {
 		status,
@@ -48,7 +43,20 @@ export default function App() {
 
 	useEffect(() => {
 		console.log('[SidePanel] App mounted')
-	}, [])
+		listSessions()
+			.then((sessions) => {
+				const tasks = sessions.map((s) => s.task)
+				let uniqueTasks = [...new Set(tasks)]
+				if (uniqueTasks.length === 0) {
+					uniqueTasks = ['处理客服消息']
+				}
+				setHistoricalTasks(uniqueTasks)
+				if (uniqueTasks.length > 0 && !inputValue) {
+					setInputValue(uniqueTasks[0])
+				}
+			})
+			.catch((err) => console.error('[SidePanel] Failed to load history tasks:', err))
+	}, [inputValue])
 
 	// Persist session when task finishes
 	const prevStatusRef = useRef(status)
@@ -289,25 +297,32 @@ export default function App() {
 
 			{/* Input */}
 			<footer className="border-t p-3">
-				<InputGroup className="relative rounded-lg">
-					<InputGroupTextarea
-						ref={textareaRef}
-						placeholder="Describe your task... (Enter to send)"
+				<InputGroup className="relative rounded-lg bg-background border">
+					<select
 						value={inputValue}
 						onChange={(e) => setInputValue(e.target.value)}
-						onKeyDown={handleKeyDown}
 						disabled={isRunning}
-						className="text-xs pr-12 min-h-10"
-					/>
-					<InputGroupAddon align="inline-end" className="absolute bottom-0 right-0">
+						className="w-full text-xs h-10 px-3 pr-12 appearance-none bg-transparent outline-none cursor-pointer disabled:opacity-50"
+					>
+						{historicalTasks.map((task) => (
+							<option key={task} value={task}>
+								{task}
+							</option>
+						))}
+					</select>
+					<InputGroupAddon
+						align="inline-end"
+						className="absolute top-1/2 -translate-y-1/2 right-1.5 flex items-center"
+					>
 						{isRunning ? (
 							<InputGroupButton
 								size="icon-sm"
 								variant="destructive"
 								onClick={handleStop}
-								className="size-7"
+								className="size-7 shadow-sm cursor-pointer hover:bg-red-600 transition-colors"
+								title="Pause / Stop task"
 							>
-								<Square className="size-3" />
+								<Square className="size-3" fill="currentColor" />
 							</InputGroupButton>
 						) : (
 							<InputGroupButton
@@ -315,9 +330,10 @@ export default function App() {
 								variant="default"
 								onClick={() => handleSubmit()}
 								disabled={!inputValue.trim()}
-								className="size-7 cursor-pointer"
+								className="size-7 cursor-pointer shadow-sm hover:opacity-80 transition-opacity disabled:opacity-50"
+								title="Start task"
 							>
-								<Send className="size-3" />
+								<Play className="size-3" fill="currentColor" />
 							</InputGroupButton>
 						)}
 					</InputGroupAddon>
