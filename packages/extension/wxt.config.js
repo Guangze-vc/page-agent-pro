@@ -7,13 +7,7 @@ const chromeProfile = resolve(process.cwd(), '.wxt/chrome-data')
 const devServerHost = '127.0.0.1'
 const devServerPort = 3300
 const devServerOrigin = `http://${devServerHost}:${devServerPort}`
-const sourceIconPath = resolve(process.cwd(), 'src/assets/icon.png')
-const publicAssetsDir = resolve(process.cwd(), 'public/assets')
-const publicIconPath = resolve(publicAssetsDir, 'icon.png')
-
 mkdirSync(chromeProfile, { recursive: true })
-mkdirSync(publicAssetsDir, { recursive: true })
-copyFileSync(sourceIconPath, publicIconPath)
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
@@ -72,15 +66,15 @@ export default defineConfig({
 		permissions: ['tabs', 'tabGroups', 'sidePanel', 'storage'],
 		host_permissions: ['<all_urls>'],
 		icons: {
-			16: 'assets/icon.png',
-			32: 'assets/icon.png',
-			48: 'assets/icon.png',
-			64: 'assets/icon.png',
-			128: 'assets/icon.png',
+			16: 'icon.png',
+			32: 'icon.png',
+			48: 'icon.png',
+			64: 'icon.png',
+			128: 'icon.png',
 		},
 		action: {
 			default_title: '__MSG_extActionTitle__',
-			default_icon: 'assets/icon.png',
+			default_icon: 'icon.png',
 		},
 		web_accessible_resources: [
 			{
