@@ -1,8 +1,6 @@
 import type { AgentStatus } from '@page-agent/core'
 import { Motion } from 'ai-motion'
-import { BookOpen, Globe } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { siGithub } from 'simple-icons'
 
 import logoIcon from '@/assets/icon.png'
 import { TypingAnimation } from '@/components/ui/typing-animation'
@@ -116,37 +114,6 @@ export function EmptyState() {
 					deleteSpeed={10}
 					pauseDelay={3000}
 				/>
-			</div>
-			<div className="flex items-center gap-3 mt-1 text-muted-foreground">
-				<a
-					href="https://github.com/alibaba/page-agent"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="hover:text-foreground transition-colors"
-					title="GitHub"
-				>
-					<svg role="img" viewBox="0 0 24 24" className="size-4 fill-current">
-						<path d={siGithub.path} />
-					</svg>
-				</a>
-				<a
-					href="https://alibaba.github.io/page-agent/docs/features/chrome-extension"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="hover:text-foreground transition-colors"
-					title="Documentation"
-				>
-					<BookOpen className="size-4" />
-				</a>
-				<a
-					href="https://alibaba.github.io/page-agent"
-					target="_blank"
-					rel="noopener noreferrer"
-					className="hover:text-foreground transition-colors"
-					title="Website"
-				>
-					<Globe className="size-4" />
-				</a>
 			</div>
 		</div>
 	)
