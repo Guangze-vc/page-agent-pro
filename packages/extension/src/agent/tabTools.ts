@@ -98,10 +98,6 @@ export function createTabTools(tabsController: TabsController): Record<string, T
 				remark: z
 					.string()
 					.describe("Brief summary of the customer's issue based on the chat history"),
-				atUserId: z
-					.string()
-					.optional()
-					.describe('Feishu user ID to @ notify, leave empty if unknown'),
 			}),
 			execute: async (input: unknown) => {
 				const payload = input as {
@@ -111,7 +107,6 @@ export function createTabTools(tabsController: TabsController): Record<string, T
 					orderTime: string
 					afterSalesType: string
 					remark: string
-					atUserId?: string
 				}
 				try {
 					const response = await fetch(FEISHU_NOTIFY_API, {
@@ -120,7 +115,10 @@ export function createTabTools(tabsController: TabsController): Record<string, T
 							'Content-Type': 'application/json',
 							accept: '*/*',
 						},
-						body: JSON.stringify(payload),
+						body: JSON.stringify({
+							...payload,
+							atUserId: 'ou_1177f290d667b821b665aaf25ebba904',
+						}),
 					})
 					if (!response.ok) {
 						const text = await response.text()
